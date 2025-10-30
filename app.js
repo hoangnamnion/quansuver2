@@ -88,12 +88,7 @@
     } catch(e){ return ""; }
   }
 
-  function posterFromVideoUrl(url){
-    try{
-      var clean = url.split("?")[0].split("#")[0];
-      return clean.replace(/\.(mp4|webm|ogg)$/i, ".jpg");
-    }catch(e){ return url; }
-  }
+  // no poster; we'll autoplay muted inline when in view
 
   function createCard(photo, index){
     const card = document.createElement("button");
@@ -107,9 +102,17 @@
       mediaEl = document.createElement("video");
       mediaEl.muted = true;
       mediaEl.playsInline = true;
+      mediaEl.autoplay = false; // do not auto play in grid
+      mediaEl.loop = false;
       mediaEl.src = photo.url;
       mediaEl.preload = "metadata";
-      mediaEl.poster = posterFromVideoUrl(photo.url);
+      // Seek a tiny bit to show first frame as thumbnail
+      mediaEl.addEventListener("loadedmetadata", function(){
+        try{ this.currentTime = 0.1; }catch(e){}
+      });
+      mediaEl.addEventListener("seeked", function(){
+        try{ this.pause(); }catch(e){}
+      }, { once:true });
       const playTag = document.createElement("div");
       playTag.className = "card__play";
       playTag.textContent = "▶ Video";
@@ -292,10 +295,14 @@
       const card = createCard(currentData[i], i);
       // Boost priority for the very first rows
       var imgEl = card.querySelector("img");
+      var vidEl = card.querySelector("video");
       if(imgEl){
         if(i < 8){ imgEl.setAttribute("fetchpriority", "high"); }
         imgEl.style.opacity = "0";
         imgEl.addEventListener("load", function(){ this.decode && this.decode().catch(function(){}).finally(()=>{ this.style.transition = "opacity .3s ease"; this.style.opacity = "1"; }); }.bind(imgEl), { once:true });
+      }
+      if(vidEl){
+        if(window.__videoIO){ window.__videoIO.observe(vidEl); }
       }
       galleryEl.appendChild(card);
     }
@@ -469,6 +476,21 @@
         }
       });
     }, { rootMargin: '200px 0px' });
+  }
+
+  // Video preload when entering viewport (no autoplay)
+  if('IntersectionObserver' in window){
+    window.__videoIO = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        var v = en.target;
+        if(!(v && v.tagName === 'VIDEO')) return;
+        if(en.isIntersecting){
+          v.preload = 'auto';
+        } else {
+          try{ v.pause(); }catch(e){}
+        }
+      });
+    }, { rootMargin: '150px 0px', threshold: 0.1 });
   }
 
   // Idle prefetch next batch
