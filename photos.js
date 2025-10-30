@@ -124,6 +124,11 @@ const CATEGORIES = {
 "Tiểu Đội 302": `
 
  @img/3021.jpg,
+ @img3/3021.jpg,
+ @img3/3022.jpg,
+ @img3/3023.jpg,
+ @img3/3024.jpg,
+ @img3/3025.jpg,
  @img/3022.jpg,
  @img/3023.jpg,
  @img/3024.jpg,
@@ -178,7 +183,7 @@ const CATEGORIES = {
   @img2/302.mp4,
   @img2/303.mp4,
   @img2/304.mp4,
-  
+
 
 
 `
