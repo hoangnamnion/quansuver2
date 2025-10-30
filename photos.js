@@ -26,6 +26,16 @@ const CATEGORIES = {
 @img2/2039.jpg,
 @img2/20310.jpg,
 @img2/20311.jpg,
+@img3/2032.jpg,
+@img3/2033.jpg,
+@img3/2035.jpg,
+@img3/2036.jpg,
+@img3/2037.jpg,
+@img3/2038.jpg,
+@img3/2039.jpg,
+@img3/20310.jpg,
+@img3/20311.jpg,
+@img3/20313.jpg,
 
 
 
@@ -112,6 +122,7 @@ const CATEGORIES = {
 @img2/20427.jpg,
 @img2/20428.jpg,
 @img2/20429.jpg,
+@img3/2041.jpg,
 
 
 
@@ -129,6 +140,8 @@ const CATEGORIES = {
  @img3/3023.jpg,
  @img3/3024.jpg,
  @img3/3025.jpg,
+ @img3/3026.jpg,
+ @img3/3027.jpg,
  @img/3022.jpg,
  @img/3023.jpg,
  @img/3024.jpg,
@@ -183,8 +196,17 @@ const CATEGORIES = {
   @img2/302.mp4,
   @img2/303.mp4,
   @img2/304.mp4,
+  @img3/2031.mp4,
 
 
+
+`,
+"Đội Múa": `
+ @img2/304.jpg,
+
+`,
+"Đội Bóng Đá": `
+ @img2/304.jpg,
 
 `
 };
