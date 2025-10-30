@@ -175,7 +175,6 @@ const CATEGORIES = {
  @img3/3021.jpg,
  @img3/3022.jpg,
  @img3/3023.jpg,
- @img3/3024.jpg,
  @img3/3025.jpg,
  @img3/3026.jpg,
  @img3/3027.jpg,
@@ -240,8 +239,18 @@ const CATEGORIES = {
 
 `,
 "Đội Múa": `
- @img2/304.jpg,
-
+ @mua/1.jpg,
+ @mua/2.jpg,
+ @mua/3.jpg,
+ @mua/4.jpg,
+ @mua/5.jpg,
+ @mua/6.jpg,
+ @mua/7.jpg,
+ @mua/8.jpg,
+ @mua/9.jpg,
+ @mua/10.jpg,
+ @mua/11.jpg,
+ @mua/12.jpg,
 `,
 "Đội Bóng Đá": `
  @img2/304.jpg,
