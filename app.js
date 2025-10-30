@@ -11,6 +11,10 @@
   const musicShow = document.getElementById("musicShow");
   const themeToggle = document.getElementById("themeToggle");
   const fallingCanvas = document.getElementById("fallingDecor");
+  const noticeEl = document.getElementById("notice");
+  const noticeClose = document.getElementById("noticeClose");
+  const noticeClose30 = document.getElementById("noticeClose30");
+  const splashEl = document.getElementById("splash");
 
   function isVideoUrl(url){
     return /\.(mp4|webm|ogg)(\?|#|$)/i.test(url);
@@ -341,13 +345,46 @@
     musicBtn.setAttribute("aria-pressed", isPlaying ? "true" : "false");
     musicBtn.textContent = isPlaying ? "⏸" : "♫";
   }
-  // Playlist support
-  var playlist = (typeof window !== "undefined" && Array.isArray(window.MUSIC_PLAYLIST)) ? window.MUSIC_PLAYLIST : ["music.mp3"];
+  // Playlist support (folder 'nhac' with random order)
+  var playlist = (typeof window !== "undefined" && Array.isArray(window.MUSIC_PLAYLIST)) ? window.MUSIC_PLAYLIST.slice() : ["music.mp3"];
   var trackIndex = 0;
+  function shuffle(arr){
+    for(var i=arr.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t = arr[i]; arr[i]=arr[j]; arr[j]=t;
+    }
+    return arr;
+  }
   function loadTrack(index){
-    if(!bgm) return;
+    if(!bgm || !playlist.length) return;
     trackIndex = (index + playlist.length) % playlist.length;
     bgm.src = String(playlist[trackIndex]);
+  }
+  async function tryLoadPlaylistFromFolder(){
+    // 1) Try nhac/playlist.json
+    try{
+      var res = await fetch("nhac/playlist.json", { cache: "no-store" });
+      if(res.ok){
+        var arr = await res.json();
+        if(Array.isArray(arr) && arr.length){
+          playlist = shuffle(arr.map(function(p){ return String(p); }));
+          return true;
+        }
+      }
+    }catch(e){}
+    // 2) Fallback: probe nhac/1.mp3..50.mp3
+    var probes = [];
+    for(var i=1;i<=50;i++){ probes.push("nhac/"+i+".mp3"); }
+    var found = [];
+    for(var k=0;k<probes.length;k++){
+      var url = probes[k];
+      try{
+        var r = await fetch(url, { method: "HEAD" });
+        if(r.ok){ found.push(url); }
+      }catch(e){}
+    }
+    if(found.length){ playlist = shuffle(found); return true; }
+    return false;
   }
   function playCurrent(){
     if(!bgm) return;
@@ -359,7 +396,11 @@
     playCurrent();
   }
   if(musicBtn && bgm){
-    // initialize first track
+    // initialize playlist from folder if available
+    tryLoadPlaylistFromFolder().then(function(has){
+      if(has){ loadTrack(0); }
+    });
+    // initialize first track anyway as fallback
     loadTrack(0);
     musicBtn.addEventListener("click", function(){
       if(bgm.paused){
@@ -389,6 +430,14 @@
         updateMusicUI(false);
       }
     });
+
+    // Autoplay on first user interaction anywhere on page
+    var firstPlay = function(){
+      if(!bgm.src){ loadTrack(trackIndex); }
+      playCurrent();
+    };
+    window.addEventListener("pointerdown", firstPlay, { once:true });
+    window.addEventListener("keydown", firstPlay, { once:true });
   }
 
   if(loadMoreBtn){
@@ -469,6 +518,59 @@
       try{ localStorage.setItem("theme", nowDark ? "dark" : "light"); }catch(e){}
     });
   }
+
+  // Notice logic
+  (function(){
+    if(!noticeEl) return;
+    function showNotice(){
+      noticeEl.classList.add("show");
+      noticeEl.setAttribute("aria-hidden", "false");
+    }
+    function hideNotice(){
+      noticeEl.classList.remove("show");
+      noticeEl.setAttribute("aria-hidden", "true");
+    }
+    var dismissUntil = 0;
+    try{ dismissUntil = parseInt(localStorage.getItem("noticeDismissUntil"), 10) || 0; }catch(e){}
+    if(Date.now() < dismissUntil){
+      // still within cool-down, do not show
+    } else {
+      // delay slightly to avoid layout jank
+      setTimeout(showNotice, 250);
+    }
+    if(noticeClose){
+      noticeClose.addEventListener("click", function(){
+        hideNotice(); // close only for this session
+      });
+    }
+    if(noticeClose30){
+      noticeClose30.addEventListener("click", function(){
+        hideNotice();
+        try{ localStorage.setItem("noticeDismissUntil", String(Date.now() + 30*60*1000)); }catch(e){}
+      });
+    }
+  })();
+
+  // Splash logic: show full-screen background then fade after 2s
+  (function(){
+    if(!splashEl) return;
+    // Prevent scroll while showing splash
+    var prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    var img = new Image();
+    img.src = "backgroud.jpg";
+    var startFade = function(){
+      setTimeout(function(){
+        splashEl.classList.add("hide");
+        setTimeout(function(){
+          if(splashEl && splashEl.parentNode){ splashEl.parentNode.removeChild(splashEl); }
+          document.body.style.overflow = prevOverflow;
+        }, 700);
+      }, 2000);
+    };
+    if(img.complete){ startFade(); }
+    else { img.addEventListener("load", startFade); }
+  })();
 
   // Falling decor animation (heart-shaped VN flag)
   (function(){
