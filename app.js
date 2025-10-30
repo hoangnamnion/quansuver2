@@ -88,6 +88,13 @@
     } catch(e){ return ""; }
   }
 
+  function posterFromVideoUrl(url){
+    try{
+      var clean = url.split("?")[0].split("#")[0];
+      return clean.replace(/\.(mp4|webm|ogg)$/i, ".jpg");
+    }catch(e){ return url; }
+  }
+
   function createCard(photo, index){
     const card = document.createElement("button");
     card.className = "card";
@@ -102,6 +109,7 @@
       mediaEl.playsInline = true;
       mediaEl.src = photo.url;
       mediaEl.preload = "metadata";
+      mediaEl.poster = posterFromVideoUrl(photo.url);
       const playTag = document.createElement("div");
       playTag.className = "card__play";
       playTag.textContent = "▶ Video";
